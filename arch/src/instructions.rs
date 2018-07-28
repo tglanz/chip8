@@ -10,7 +10,7 @@ pub enum Instruction {
     CLS,
 
     /// Return from a subroutine
-    ///  - set program counter to the of the stack
+    ///  - set program counter to the top of the stack
     ///  - decrement the stack pointer
     RTS,
 
@@ -85,11 +85,59 @@ pub enum Instruction {
     /// set Vreg_id = {random_byte} AND value
     RAND { reg_id: Byte, value: Byte },
     
-    /// NOT IMPLEMENTED INSTRUCTION
-    TODO
+    /// draws to the screen
+    /// Dxyn - DRW Vx, Vy, nibble        
+    DRW { x_reg_id: Byte, y_reg_id: Byte, value: Byte },
+
+    /// skip next instruction if key with value of Vreg_id is pressed
+    SKP { reg_id: Byte },
+
+    /// skip next instruction if key with value of Vreg_id is not pressed
+    SKNP { reg_id: Byte },
+
+    /// set Vreg_id = delay timer value
+    GDELAY { reg_id: Byte },
+
+    /// wait for key, put key value in Vreg_id
+    KEY { reg_id: Byte },
+
+    /// set delay timer = Vreg_id
+    SDELAY { reg_id: Byte },
+
+    /// set the sound timer = Vreg_id
+    SSOUND { reg_id: Byte },
+
+    /// add Vreg_id to index register
+    ADI { reg_id: Byte },
+
+    /// point I to the spirte for hex char in Vreg_id
+    /// sprite is 5 bytes high
+    FONT { reg_id: Byte },
+
+    /// set bcd repr of Vreg_id at locations I, I+1, I+2 (doesn't change I register itself)
+    BCD { reg_id: Byte },
+
+    /// store registers V0 up to Vreg_id at locations of I and onwards
+    /// I is incremented to point to the next loction (I = I + reg_id + 1)
+    STR { reg_id: Byte },
+
+    /// load registers V0 up to Vreg_id from location of I and onwards
+    /// /// I is incremented to point to the next loction (I = I + reg_id + 1)
+    LDR { reg_id: Byte },
 }
 
-pub fn match_nibbles(nibbles: &[u8; 4]) -> Option<Instruction> {
+impl Instruction {
+    pub fn parse_code(code: u16) -> Option<Instruction> {
+        match_nibbles(&[
+            (code & 0x000F) as u8,
+            ((code & 0x00F0) >> 4) as u8,
+            ((code & 0x0F00) >> 8) as u8,
+            ((code & 0xF000) >> 12) as u8,
+        ])
+    }
+}
+
+fn match_nibbles(nibbles: &[u8; 4]) -> Option<Instruction> {
     match *nibbles {
         [ 0x00, 0x00, 0x0E, 0x00 ] => Some(Instruction::CLS),
         [ 0x00, 0x00, 0x0E, 0x0E ] => Some(Instruction::RTS),
@@ -153,41 +201,41 @@ pub fn match_nibbles(nibbles: &[u8; 4]) -> Option<Instruction> {
         [ 0x0C, x, high, low ] => Some(Instruction::RAND {
             reg_id: x, value: two_nibbles(high, low)
         }),
-        [ 0x0D, x, y, n ] => Some(Instruction::TODO {
-            // dxyn
+        [ 0x0D, x, y, n ] => Some(Instruction::DRW {
+            x_reg_id: x, y_reg_id: y, value: n
         }),
-        [ 0x0E, k, 9, 0x0E ] => Some(Instruction::TODO {
-            // ek9e
+        [ 0x0E, k, 9, 0x0E ] => Some(Instruction::SKP {
+            reg_id: k
         }),
-        [ 0x0E, k, 0x0A, 0x01 ] => Some(Instruction::TODO {
-            // eka1
+        [ 0x0E, k, 0x0A, 0x01 ] => Some(Instruction::SKNP {
+            reg_id: k
         }),
-        [ 0x0F, r, 0x00, 0x07 ] => Some(Instruction::TODO {
-            // fr07
+        [ 0x0F, r, 0x00, 0x07 ] => Some(Instruction::GDELAY {
+            reg_id: r
         }),
-        [ 0x0F, r, 0x00, 0x0A ] => Some(Instruction::TODO {
-            // fr0A
+        [ 0x0F, r, 0x00, 0x0A ] => Some(Instruction::KEY {
+            reg_id: r
         }),
-        [ 0x0F, r, 0x01, 0x05 ] => Some(Instruction::TODO {
-            // fr15
+        [ 0x0F, r, 0x01, 0x05 ] => Some(Instruction::SDELAY {
+            reg_id: r
         }),
-        [ 0x0F, r, 0x01, 0x08 ] => Some(Instruction::TODO {
-            // fr18
+        [ 0x0F, r, 0x01, 0x08 ] => Some(Instruction::SSOUND {
+            reg_id: r
         }),
-        [ 0x0F, r, 0x01, 0x0E ] => Some(Instruction::TODO {
-            // fr1e
+        [ 0x0F, r, 0x01, 0x0E ] => Some(Instruction::ADI {
+            reg_id: r
         }),
-        [ 0x0F, r, 0x02, 0x09 ] => Some(Instruction::TODO {
-            // fr29
+        [ 0x0F, r, 0x02, 0x09 ] => Some(Instruction::FONT {
+            reg_id: r
         }),
-        [ 0x0F, r, 0x03, 0x03 ] => Some(Instruction::TODO {
-            // fr33
+        [ 0x0F, r, 0x03, 0x03 ] => Some(Instruction::BCD {
+            reg_id: r
         }),
-        [ 0x0F, r, 0x05, 0x05 ] => Some(Instruction::TODO {
-            // fr55
+        [ 0x0F, r, 0x05, 0x05 ] => Some(Instruction::STR {
+            reg_id: r
         }),
-        [ 0x0F, r, 0x06, 0x05 ] => Some(Instruction::TODO {
-            // fr65
+        [ 0x0F, r, 0x06, 0x05 ] => Some(Instruction::LDR {
+            reg_id: r
         }),
         _ => None
     }

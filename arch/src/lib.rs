@@ -1,6 +1,14 @@
+extern crate rand;
+
 pub type Address = u16;
 pub type Byte = u8;
 
-pub mod memory;
-pub mod registers;
-pub mod instructions;
+mod display;
+mod memory;
+mod registers;
+mod instructions;
+mod keyboard;
+
+mod executions;
+
+pub mod cpu;

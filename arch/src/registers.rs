@@ -15,13 +15,24 @@ use { Byte };
 /// 
 /// SP - 
 ///     Stack Pointer, points to the top of the stack
-struct Registers {
-    v_registers: [Byte; 0xF],
-    i_register: u16,              
+pub struct Registers {
+    pub vs: [Byte; 0xF],
+    pub i: u16,              
+    pub sound_timer: Byte,
+    pub delay_timer: Byte,
+    pub program_counter: u16,
+    pub stack_pointer: u8,
+}
 
-    // Sound
-    // Delay
-
-    program_counter: u16,
-    stack_pointer: u8,
+impl Registers {
+    pub fn new() -> Registers {
+        Registers {
+            vs: [0; 0xF],
+            i: 0,
+            delay_timer: 0,
+            sound_timer: 0,
+            stack_pointer: 0,
+            program_counter: 0,
+        }
+    }
 }

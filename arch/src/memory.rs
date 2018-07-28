@@ -1,13 +1,70 @@
+use std::iter::Iterator;
 use {Byte};
 
+pub const FONT_OFFSET: usize = 0;
+
 const MEMORY_SIZE: usize = 4096;
+
+const FONT: [Byte; 5 * 16] = [
+    // 0 
+    0xF0, 0x90, 0x90, 0x90, 0xF0,
+    // 1 
+    0x20, 0x60, 0x20, 0x20, 0x70,
+    // 2 
+    0xF0, 0x10, 0xF0, 0x80, 0xF0,
+    // 3 
+    0xF0, 0x10, 0xF0, 0x10, 0xF0,
+    // 4 
+    0x90, 0x90, 0xF0, 0x10, 0x10,
+    // 5
+    0xF0, 0x80, 0xF0, 0x10, 0xF0,
+    // 6
+    0xF0, 0x80, 0xF0, 0x90, 0xF0,
+    // 7
+    0xF0, 0x10, 0x20, 0x40, 0x40,
+    // 8
+    0xF0, 0x90, 0xF0, 0x90, 0xF0,
+    // 9
+    0xF0, 0x90, 0xF0, 0x10, 0xF0,
+    // A
+    0xF0, 0x90, 0xF0, 0x90, 0x90,
+    // B
+    0xE0, 0x90, 0xE0, 0x90, 0xE0,
+    // C
+    0xF0, 0x80, 0x80, 0x80, 0xF0,
+    // D
+    0xE0, 0x90, 0x90, 0x90, 0xE0,
+    // E
+    0xF0, 0x80, 0xF0, 0x80, 0xF0,
+    // F
+    0xF0, 0x80, 0xF0, 0x80, 0x80
+];
 
 /// Memory
 /// 
 /// x000 to x1FF is mostly reserved for the interperter
 /// x200 is where most programs start
-/// x600 is where programs intended for eti 600 computers starts
-struct Memory {
-    data: [Byte; MEMORY_SIZE as usize]
+pub struct Memory {
+    pub data: [Byte; MEMORY_SIZE]
 }
 
+impl Memory {
+    pub fn new(program_data: &Vec<Byte>) -> Memory {
+
+        let mut data = [0; MEMORY_SIZE];
+
+        // Set font values in our data space
+        for (index, value) in FONT.iter().enumerate() {
+            data[index] = *value;
+        }
+
+        // Set program data in program space
+        for (index, value) in program_data.iter().take(MEMORY_SIZE).enumerate() {
+            data[0x200 + index] = *value;
+        }
+
+        Memory {
+            data
+        }
+    }
+}
