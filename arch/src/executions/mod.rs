@@ -67,7 +67,8 @@ pub fn execute_instruction(
             registers.program_counter += 2;
         },
         ADD { reg_id, value } => {
-            registers.vs[reg_id as usize] += value;
+            let res = registers.vs[reg_id as usize] as u16 + value as u16;
+            registers.vs[reg_id as usize] = res as u8;
             registers.program_counter += 2;
         },
         MOVXY { x_reg_id, y_reg_id } => {
@@ -199,7 +200,7 @@ pub fn execute_instruction(
             registers.i = FONT_OFFSET as u16 + v as u16;
         },
         BCD { reg_id } => {
-            
+            panic!("BCD not implemented");
         },
         STR { reg_id } => {
             let initial_location = registers.i as usize;

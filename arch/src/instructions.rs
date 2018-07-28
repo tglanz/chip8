@@ -128,17 +128,21 @@ pub enum Instruction {
 
 impl Instruction {
     pub fn parse_code(code: u16) -> Option<Instruction> {
-        match_nibbles(&[
+        
+        let nibbles: [u8; 4] = [
             (code & 0x000F) as u8,
             ((code & 0x00F0) >> 4) as u8,
             ((code & 0x0F00) >> 8) as u8,
             ((code & 0xF000) >> 12) as u8,
-        ])
+        ];
+
+        return match_nibbles(&nibbles);
     }
 }
 
 fn match_nibbles(nibbles: &[u8; 4]) -> Option<Instruction> {
-    match *nibbles {
+    let rev = [nibbles[3], nibbles[2], nibbles[1], nibbles[0]];
+    match rev {
         [ 0x00, 0x00, 0x0E, 0x00 ] => Some(Instruction::CLS),
         [ 0x00, 0x00, 0x0E, 0x0E ] => Some(Instruction::RTS),
         [ 0x01, high, middle, low ] => Some(Instruction::JMP {
@@ -186,7 +190,7 @@ fn match_nibbles(nibbles: &[u8; 4]) -> Option<Instruction> {
         [ 0x08, x, y, 0x07 ] => Some(Instruction::RSUBXY {
             x_reg_id: x, y_reg_id: y
         }),
-        [ 0x08, x, y, 0x0E ] => Some(Instruction::SHL {
+        [ 0x08, x, 0, 0x0E ] => Some(Instruction::SHL {
             reg_id: x
         }),
         [ 0x09, x, y, 0x00 ] => Some(Instruction::SNEXY {
@@ -242,7 +246,7 @@ fn match_nibbles(nibbles: &[u8; 4]) -> Option<Instruction> {
 }
 
 fn two_nibbles(high: u8, low: u8) -> u8 {
-    high << 4 + low
+    (high << 4) + low
 }
 
 fn three_nibbles(high: u8, middle: u8, low: u8) -> u16 {

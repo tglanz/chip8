@@ -2,6 +2,7 @@ use std::iter::Iterator;
 use {Byte};
 
 pub const FONT_OFFSET: usize = 0;
+pub const PROGRAM_OFFSET: usize = 0x200;
 
 const MEMORY_SIZE: usize = 4096;
 
@@ -60,6 +61,7 @@ impl Memory {
 
         // Set program data in program space
         for (index, value) in program_data.iter().take(MEMORY_SIZE).enumerate() {
+            println!("Setting {:X?}", value);
             data[0x200 + index] = *value;
         }
 
