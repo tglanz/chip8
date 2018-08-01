@@ -61,7 +61,6 @@ impl Memory {
 
         // Set program data in program space
         for (index, value) in program_data.iter().take(MEMORY_SIZE).enumerate() {
-            println!("Setting {:X?}", value);
             data[0x200 + index] = *value;
         }
 

@@ -47,8 +47,21 @@ impl Display {
         did_flip
     }
 
-    pub fn traverse<F>(&self, mut f: F)
-        where F: FnMut(usize, usize, Pixel) {
+    pub fn temp(&self) -> Vec<(usize, usize, bool)> {
+        let mut vec = Vec::new();
+        for rowdex in 0..RESOLUTION_HEIGHT {
+            let offset = rowdex * RESOLUTION_WIDTH;
+            for coldex in 0..RESOLUTION_WIDTH {
+                let pixel = self.pixels[offset + coldex];
+                vec.push((coldex, rowdex, pixel));
+            }
+        }    
+
+        vec
+    }
+
+    pub fn traverse<F>(&self, f: F)
+        where F: Fn(usize, usize, Pixel) {
             for rowdex in 0..RESOLUTION_HEIGHT {
                 let offset = rowdex * RESOLUTION_WIDTH;
                 for coldex in 0..RESOLUTION_WIDTH {

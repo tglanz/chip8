@@ -63,8 +63,7 @@ impl Cpu {
         self.keyboard.set_pressed(key);
     }
 
-    pub fn render_pass(&self, renderer: &mut Renderer) {
-        self.display.traverse(|x, y, pixel| renderer.pixel(x, y, pixel));
-        renderer.flush();
+    pub fn get_display(&self) -> &Display {
+        &self.display
     }
 }

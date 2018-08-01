@@ -1,12 +1,22 @@
 use std::fs::File;
 use std::io::Read;
 
+use opengl_graphics::{ OpenGL, GlGraphics };
 use glutin_window::GlutinWindow;
 
-use piston::input::{RenderEvent, UpdateEvent, IdleEvent, PressEvent, ReleaseEvent, Button, Key};
+use piston::window::WindowSettings;
+use piston::input::{RenderEvent, RenderArgs, UpdateEvent, IdleEvent, PressEvent, ReleaseEvent, Button, Key};
 use piston::event_loop::*;
 
+use graphics::*;
+
 use arch::cpu::Cpu;
+
+struct Pixel {
+    x: usize,
+    y: usize,
+    is_set: bool
+}
 
 fn match_key_to_cpu(key: Key) -> Option<u8> {
     match key {
@@ -30,28 +40,36 @@ fn match_key_to_cpu(key: Key) -> Option<u8> {
     }
 }
 
-pub trait WindowProvider {
-    fn into_window(self) -> GlutinWindow;
-}
-
 pub struct Program {
     cpu: Cpu,
     window: GlutinWindow,
+    opengl: GlGraphics,
 }
 
 impl Program {
-    pub fn new<T>(program_path: &str, window_provider: T) -> Program
-        where T: WindowProvider {
+    pub fn new(program_path: &str) -> Program {
         let mut program_data = Vec::new();
         let mut file = File::open(program_path).expect("Unable to find program file");
         file.read_to_end(&mut program_data).expect("Failed to read program");
-        let mut cpu = Cpu::new(&program_data);
+        
+        let opengl_spec = OpenGL::V3_2;
+        
+        let window = WindowSettings::new(
+                    "chip8",
+                    [800, 600]
+                )
+                .opengl(opengl_spec)
+                .exit_on_esc(true)
+                .build()
+                .unwrap();
 
-        let mut window = window_provider.into_window();
+        let opengl = GlGraphics::new(opengl_spec);
 
         Program {
-            cpu,
-            window
+            cpu: Cpu::new(&program_data),
+            window,
+            opengl,
+
         }
     }
 
@@ -61,7 +79,7 @@ impl Program {
         while let Some(e) = events.next(&mut self.window) {
 
             e.render(|args| {
-                self.render(args.draw_width, args.draw_height);
+                self.render(args);
             });
 
             e.update(|args| {
@@ -89,6 +107,28 @@ impl Program {
         self.cpu.tick();
     }
 
-    pub fn render(&mut self, width: u32, height: u32) {
+    pub fn render(&mut self, args: &RenderArgs) {
+        use graphics::*;
+
+        let pixels = self.cpu.get_display().temp();
+
+        const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
+        const RED:   [f32; 4] = [1.0, 0.0, 0.0, 1.0];
+        let square = rectangle::square(0.0, 0.0, 1.0);
+
+        self.opengl.draw(args.viewport(), |c, gl| {
+            clear(GREEN, gl);
+            for pixel in pixels {
+                if pixel.2 {
+                    let x = (pixel.0 as f64);
+                    let y = (pixel.1 as f64);
+                    let transform = c.transform.trans(x, y);
+                    // Draw a box rotating around the middle of the screen.
+                    rectangle(RED, square, transform, gl);
+                }
+                
+            }
+        });
+        
     }
 }
