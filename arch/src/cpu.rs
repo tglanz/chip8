@@ -55,6 +55,14 @@ impl Cpu {
         }
     }
 
+    pub fn released_key(&mut self, key: Byte) {
+        self.keyboard.set_released(key);
+    }
+
+    pub fn pressed_key(&mut self, key: Byte) {
+        self.keyboard.set_pressed(key);
+    }
+
     pub fn render_pass(&self, renderer: &mut Renderer) {
         self.display.traverse(|x, y, pixel| renderer.pixel(x, y, pixel));
         renderer.flush();

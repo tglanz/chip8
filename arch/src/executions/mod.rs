@@ -181,7 +181,15 @@ pub fn execute_instruction(
             registers.program_counter += 2;
         },
         KEY { reg_id } => {
-            // TODO
+            let value = registers.vs[reg_id as usize];
+            
+            let units = value % 10;
+            let tens = (value / 10) % 10;
+            let hundreds = (value / 100) % 10;
+
+            memory.data[registers.i as usize] = hundreds;
+            memory.data[registers.i as usize + 1] = tens;
+            memory.data[registers.i as usize + 2] = units;
         },
         SDELAY { reg_id } => {
             registers.delay_timer = registers.vs[reg_id as usize];
