@@ -181,15 +181,7 @@ pub fn execute_instruction(
             registers.program_counter += 2;
         },
         KEY { reg_id } => {
-            let value = registers.vs[reg_id as usize];
             
-            let units = value % 10;
-            let tens = (value / 10) % 10;
-            let hundreds = (value / 100) % 10;
-
-            memory.data[registers.i as usize] = hundreds;
-            memory.data[registers.i as usize + 1] = tens;
-            memory.data[registers.i as usize + 2] = units;
         },
         SDELAY { reg_id } => {
             registers.delay_timer = registers.vs[reg_id as usize];
@@ -208,7 +200,15 @@ pub fn execute_instruction(
             registers.i = FONT_OFFSET as u16 + v as u16;
         },
         BCD { reg_id } => {
-            panic!("BCD not implemented");
+            let value = registers.vs[reg_id as usize];
+            
+            let units = value % 10;
+            let tens = (value / 10) % 10;
+            let hundreds = (value / 100) % 10;
+
+            memory.data[registers.i as usize] = hundreds;
+            memory.data[registers.i as usize + 1] = tens;
+            memory.data[registers.i as usize + 2] = units;
         },
         STR { reg_id } => {
             let initial_location = registers.i as usize;
